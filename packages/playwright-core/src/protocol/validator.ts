@@ -1062,6 +1062,13 @@ scheme.PageKeyboardTypeParams = tObject({
   delay: tOptional(tNumber),
 });
 scheme.PageKeyboardTypeResult = tOptional(tObject({}));
+scheme.PageKeyboardImeSetCompositionParams = tObject({
+  text: tString,
+  selectionStart: tNumber,
+  selectionEnd: tNumber,
+  replacementStart: tOptional(tNumber),
+  replacementEnd: tOptional(tNumber),
+});
 scheme.PageKeyboardPressParams = tObject({
   key: tString,
   delay: tOptional(tNumber),

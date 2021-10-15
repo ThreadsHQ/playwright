@@ -85,6 +85,95 @@ it('insertText should only emit input event', async ({ page, server }) => {
   expect(await events.jsonValue()).toEqual(['input']);
 });
 
+it('should verify correct text values for keyboard.imeSetComposition', async ({ page, server, browserName }) => {
+  await page.goto(server.PREFIX + '/input/textarea.html');
+  await page.focus('textarea');
+  await page.keyboard.imeSetComposition('ｓ', 1, 1);
+  await page.keyboard.imeSetComposition('す', 1, 1);
+  await page.keyboard.imeSetComposition('すｓ', 2, 2);
+  await page.keyboard.imeSetComposition('すｓｈ', 3, 3);
+  await page.keyboard.imeSetComposition('すし', 2, 2);
+  expect(await page.evaluate(() => document.querySelector('textarea').value)).toBe('すし');
+  await page.keyboard.insertText('すし');
+  expect(await page.evaluate(() => document.querySelector('textarea').value)).toBe('すし');
+});
+
+it('should verify correct event sequence for keyboard.imeSetComposition', async ({ page, server, browserName }) => {
+  await page.goto(server.PREFIX + '/input/textarea.html');
+  await page.focus('textarea');
+  const events = await page.evaluateHandle(() => {
+    const events = [];
+    document.addEventListener('keydown', e => events.push(e.type));
+    document.addEventListener('keyup', e => events.push(e.type));
+    document.addEventListener('compositionstart', e => events.push(e.type));
+    document.addEventListener('input', e => events.push(e.type));
+    document.addEventListener('compositionupdate', e => events.push(e.type));
+    document.addEventListener('compositionend', e => events.push(e.type));
+    return events;
+  });
+  await page.keyboard.imeSetComposition('ｓ', 1, 1);
+  await page.keyboard.imeSetComposition('す', 1, 1);
+  await page.keyboard.insertText('す');
+  if (browserName === 'firefox') {
+    expect(await events.jsonValue()).toEqual(['compositionstart', 'compositionupdate', 'input',
+      'compositionupdate', 'input', 'compositionend', 'input']);
+  } else {
+    expect(await events.jsonValue()).toEqual(['compositionstart', 'compositionupdate', 'input',
+      'compositionupdate', 'input', 'compositionupdate', 'input', 'compositionend']);
+  }
+});
+
+it('should verify keyboard.imeSetComposition reconversion scenario', async ({ page, server, browserName }) => {
+  await page.goto(server.PREFIX + '/input/textarea.html');
+  await page.focus('textarea');
+  await page.fill('textarea', 'すしおに');
+  await page.press('textarea', 'ArrowLeft');
+  await page.press('textarea', 'ArrowLeft');
+  await page.press('textarea', 'ArrowLeft');
+  await page.keyboard.imeSetComposition('オニ', 2, 2, { replacementStart: 0, replacementEnd: 1 });
+  expect(await page.evaluate(() => document.querySelector('textarea').value)).toBe('オニしおに');
+  await page.keyboard.insertText('オニ');
+  expect(await page.evaluate(() => document.querySelector('textarea').value)).toBe('オニしおに');
+});
+
+it('should verify cancelling composition with insertText output', async ({ page, server, browserName }) => {
+  await page.goto(server.PREFIX + '/input/textarea.html');
+  await page.focus('textarea');
+  await page.keyboard.imeSetComposition('ｓ', 1, 1);
+  await page.keyboard.imeSetComposition('す', 1, 1);
+  await page.keyboard.imeSetComposition('すｓ', 2, 2);
+  await page.keyboard.imeSetComposition('すｓｈ', 3, 3);
+  await page.keyboard.imeSetComposition('すし', 2, 2);
+  await page.keyboard.insertText('');
+  expect(await page.evaluate(() => document.querySelector('textarea').value)).toBe('');
+});
+
+it('should verify cancelling composition with insertText event sequence', async ({ page, server, browserName }) => {
+  await page.goto(server.PREFIX + '/input/textarea.html');
+  await page.focus('textarea');
+  await page.fill('textarea', 'abcd');
+  const events = await page.evaluateHandle(() => {
+    const events = [];
+    document.addEventListener('compositionstart', e => events.push(e.type));
+    document.addEventListener('input', e => events.push(e.type));
+    document.addEventListener('compositionupdate', e => events.push(e.type));
+    document.addEventListener('compositionend', e => events.push(e.type));
+    document.addEventListener('keydown', e => events.push(e.type));
+    document.addEventListener('keyup', e => events.push(e.type));
+    return events;
+  });
+  await page.keyboard.imeSetComposition('e', 1, 1);
+  await page.keyboard.insertText('');
+  expect(await page.evaluate(() => document.querySelector('textarea').value)).toBe('abcd');
+  if (browserName === 'firefox') {
+    expect(await events.jsonValue()).toEqual(['compositionstart', 'compositionupdate',
+      'input', 'compositionupdate', 'compositionend', 'input']);
+  } else {
+    expect(await events.jsonValue()).toEqual(['compositionstart', 'compositionupdate',
+      'input', 'compositionupdate', 'input', 'compositionend']);
+  }
+});
+
 it('should report shiftKey', async ({ page, server, browserName, platform }) => {
   it.fail(browserName === 'firefox' && platform === 'darwin');
 

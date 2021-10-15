@@ -673,6 +673,30 @@ export module Protocol {
       text: string;
     };
     export type insertTextReturnValue = void;
+    export type setCompositionParameters = {
+      /**
+       * The text to insert
+       */
+      text: string;
+      /**
+       * selection start
+       */
+      selectionStart: number;
+      /**
+       * selection end
+       */
+      selectionEnd: number;
+      /**
+       * replacement start
+       */
+      replacementStart?: number;
+      /**
+       * replacement end
+       */
+      replacementEnd?: number;
+    }
+    export type setCompositionReturnValue = {
+    }
     export type crashParameters = {
     };
     export type crashReturnValue = void;
@@ -1136,6 +1160,7 @@ export module Protocol {
     "Page.dispatchMouseEvent": Page.dispatchMouseEventParameters;
     "Page.dispatchWheelEvent": Page.dispatchWheelEventParameters;
     "Page.insertText": Page.insertTextParameters;
+    "Page.setComposition": Page.setCompositionParameters;
     "Page.crash": Page.crashParameters;
     "Page.handleDialog": Page.handleDialogParameters;
     "Page.setInterceptFileChooserDialog": Page.setInterceptFileChooserDialogParameters;
@@ -1215,6 +1240,7 @@ export module Protocol {
     "Page.dispatchMouseEvent": Page.dispatchMouseEventReturnValue;
     "Page.dispatchWheelEvent": Page.dispatchWheelEventReturnValue;
     "Page.insertText": Page.insertTextReturnValue;
+    "Page.setComposition": Page.setCompositionReturnValue;
     "Page.crash": Page.crashReturnValue;
     "Page.handleDialog": Page.handleDialogReturnValue;
     "Page.setInterceptFileChooserDialog": Page.setInterceptFileChooserDialogReturnValue;
