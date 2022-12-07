@@ -93,7 +93,6 @@ export class Keyboard {
     if (options && options.replacementEnd !== undefined)
       replacementEnd = options.replacementEnd;
     await this._raw.imeSetComposition(text, selectionStart, selectionEnd, replacementStart, replacementEnd);
-    await this._page._doSlowMo();
   }
 
   async type(text: string, options?: { delay?: number }) {

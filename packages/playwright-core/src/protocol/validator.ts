@@ -1069,6 +1069,7 @@ scheme.PageKeyboardImeSetCompositionParams = tObject({
   replacementStart: tOptional(tNumber),
   replacementEnd: tOptional(tNumber),
 });
+scheme.PageKeyboardImeSetCompositionResult = tOptional(tObject({}));
 scheme.PageKeyboardPressParams = tObject({
   key: tString,
   delay: tOptional(tNumber),
